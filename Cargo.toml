@@ -1,0 +1,22 @@
+[package]
+name = "corgo"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+crossbeam-channel = "0.5"
+env_logger = "0.9"
+gleam = "0.13"
+glutin = "0.28"
+log = "0.4"
+webrender = { git = "https://github.com/servo/webrender" }
+
+dioxus = { git = "https://github.com/DioxusLabs/dioxus" }
+dioxus-native-core = { git = "https://github.com/DioxusLabs/dioxus" }
+dioxus-native-core-macro = { git = "https://github.com/DioxusLabs/dioxus" }
+taffy = "0.1"
+
+anymap = "0.12"
+fxhash = "0.2"
