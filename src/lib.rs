@@ -8,7 +8,7 @@ use glutin::{
     platform::run_return::EventLoopExtRunReturn,
 };
 use webrender::api::units::DeviceIntSize;
-use window::{RendererEvent, Window};
+use window::{RendererEvent, Window, UIEvent, TaskEvent};
 
 mod render;
 mod state;
@@ -28,14 +28,14 @@ pub fn launch(root: Component<()>) {
         let size = window.inner_size();
 
         match event {
-            Event::UserEvent(RendererEvent::Dirty(w)) if &w == id => {
+            Event::UserEvent(RendererEvent::UIEvent(UIEvent::Dirty(w))) if &w == id => {
                 let device_size = DeviceIntSize::new(size.width as i32, size.height as i32);
                 let device_pixel_ratio = window.scale_factor() as f32;
                 let layout_size =
                     device_size.to_f32() / webrender::euclid::Scale::new(device_pixel_ratio);
-                context.send_event(Event::UserEvent(RendererEvent::Redraw(w, layout_size)));
+                context.send_event(Event::UserEvent(RendererEvent::TaskEvent(TaskEvent::Redraw(w, layout_size))));
             }
-            Event::UserEvent(RendererEvent::Rerender(w)) if &w == id => {
+            Event::UserEvent(RendererEvent::UIEvent(UIEvent::Rerender(w))) if &w == id => {
                 let device_size = DeviceIntSize::new(size.width as i32, size.height as i32);
                 context.rerender(device_size);
                 context.swap_buffers().ok();

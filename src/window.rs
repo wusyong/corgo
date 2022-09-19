@@ -145,7 +145,7 @@ impl Window {
             });
             let dirty_nodes = DirtyNodes::Some(to_rerender.into_iter().collect());
 
-            proxy.send_event(RendererEvent::Dirty(id)).unwrap();
+            proxy.send_event(RendererEvent::UIEvent(UIEvent::Dirty(id))).unwrap();
 
             let state = WindowState::default();
             let task = WindowTask {
@@ -211,9 +211,19 @@ impl Window {
 
 #[derive(Debug, Clone, Copy)]
 pub enum RendererEvent {
-    Redraw(WindowId, LayoutSize),
+    UIEvent(UIEvent),
+    TaskEvent(TaskEvent),
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum UIEvent {
     Rerender(WindowId),
     Dirty(WindowId),
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum TaskEvent {
+    Redraw(WindowId, LayoutSize),
 }
 
 struct Notifier {
@@ -236,7 +246,7 @@ impl RenderNotifier for Notifier {
         #[cfg(not(target_os = "android"))]
         let _ = self
             .events_proxy
-            .send_event(RendererEvent::Rerender(self.id));
+            .send_event(RendererEvent::UIEvent(UIEvent::Rerender(self.id)));
     }
 
     fn new_frame_ready(&self, _: DocumentId, _scrolled: bool, composite_needed: bool) {
@@ -368,7 +378,7 @@ impl WindowTask {
                         // WindowEvent::MouseInput {
                         _ => (),
                     },
-                    Event::UserEvent(RendererEvent::Redraw(w, layout_size)) if w == id => {
+                    Event::UserEvent(RendererEvent::TaskEvent(TaskEvent::Redraw(w, layout_size))) if w == id => {
                         let nodes = if state.focus.clean() {
                             DirtyNodes::All
                         } else {
@@ -390,7 +400,7 @@ impl WindowTask {
                         }
 
                         dirty_nodes = DirtyNodes::default();
-                        proxy.send_event(RendererEvent::Rerender(id)).unwrap();
+                        proxy.send_event(RendererEvent::UIEvent(UIEvent::Rerender(id))).unwrap();
                     }
                     _ => (),
                 }
@@ -439,7 +449,7 @@ impl WindowTask {
                     if let DirtyNodes::Some(nodes) = &mut dirty_nodes {
                         nodes.extend(to_rerender.into_iter());
                     }
-                    proxy.send_event(RendererEvent::Dirty(id)).unwrap();
+                    proxy.send_event(RendererEvent::UIEvent(UIEvent::Dirty(id))).unwrap();
                 }
             }
         }
